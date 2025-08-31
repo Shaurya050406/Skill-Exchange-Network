@@ -1,32 +1,26 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 import sqlite3
 from database import db_manager
-from datetime import datetime
 import hashlib
 
-# Initialize Flask application
 app = Flask(__name__)
-app.secret_key = 'skill-exchange-secret-key-2025'  # Change in production
+app.secret_key = 'skill-exchange-secret-key-2025'
 
 def get_db_connection():
-    """Helper function to get database connection"""
     return db_manager.get_connection()
 
 def hash_password(password):
-    """Simple password hashing"""
     return hashlib.sha256(password.encode()).hexdigest()
 
 @app.route('/')
 def index():
-    """Home page - main landing page"""
     return render_template('index.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    """User login page"""
     if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '').strip()
         
         if not email or not password:
             flash('Please fill in all fields!', 'error')
@@ -36,7 +30,6 @@ def login():
         cursor = conn.cursor()
         
         try:
-            # Check if user exists
             cursor.execute('SELECT id, name, password FROM users WHERE email = ?', (email,))
             user = cursor.fetchone()
             
@@ -47,7 +40,6 @@ def login():
                 return redirect(url_for('profile'))
             else:
                 flash('Invalid email or password!', 'error')
-                
         except Exception as e:
             flash(f'Login error: {str(e)}', 'error')
         finally:
@@ -57,19 +49,16 @@ def login():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    """User registration page"""
     if request.method == 'POST':
-        # Get form data
-        name = request.form['name']
-        email = request.form['email']
-        password = request.form['password']
-        confirm_password = request.form['confirm_password']
-        division = request.form['division']
+        name = request.form.get('name', '').strip()
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+        division = request.form.get('division', '').strip()
         teach_skills = request.form.getlist('teach_skills')
         learn_skills = request.form.getlist('learn_skills')
-        available_time = request.form['available_time']
+        available_time = request.form.get('available_time', 'Flexible')
         
-        # Validation
         if not all([name, email, password, division]):
             flash('Please fill in all required fields!', 'error')
             return redirect(url_for('register'))
@@ -82,15 +71,10 @@ def register():
             flash('Password must be at least 6 characters long!', 'error')
             return redirect(url_for('register'))
         
-        if not teach_skills and not learn_skills:
-            flash('Please select at least one skill to teach or learn!', 'error')
-            return redirect(url_for('register'))
-        
         conn = get_db_connection()
         cursor = conn.cursor()
         
         try:
-            # Hash password and insert user
             hashed_password = hash_password(password)
             cursor.execute(
                 'INSERT INTO users (name, email, password, division) VALUES (?, ?, ?, ?)',
@@ -98,14 +82,12 @@ def register():
             )
             user_id = cursor.lastrowid
             
-            # Insert skills they can teach
             for skill_id in teach_skills:
                 cursor.execute(
                     'INSERT INTO user_teaches (user_id, skill_id, available_time) VALUES (?, ?, ?)',
                     (user_id, skill_id, available_time)
                 )
             
-            # Insert skills they want to learn
             for skill_id in learn_skills:
                 cursor.execute(
                     'INSERT INTO user_learns (user_id, skill_id) VALUES (?, ?)',
@@ -114,22 +96,17 @@ def register():
             
             conn.commit()
             
-            # Auto-login after registration
             session['user_id'] = user_id
             session['user_name'] = name
             flash('Registration successful! Welcome to Skill Exchange Network!', 'success')
             return redirect(url_for('profile'))
-            
         except sqlite3.IntegrityError:
-            flash('Email already exists! Please use a different email or login.', 'error')
-            return redirect(url_for('register'))
+            flash('Email already exists! Please try logging in instead.', 'error')
         except Exception as e:
             flash(f'Registration failed: {str(e)}', 'error')
-            return redirect(url_for('register'))
         finally:
             conn.close()
     
-    # Get all available skills for the form
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('SELECT id, name FROM skills ORDER BY name')
@@ -140,7 +117,6 @@ def register():
 
 @app.route('/profile')
 def profile():
-    """User profile page"""
     if 'user_id' not in session:
         flash('Please log in to access your profile!', 'warning')
         return redirect(url_for('login'))
@@ -150,15 +126,14 @@ def profile():
     cursor = conn.cursor()
     
     try:
-        # Get user information
         cursor.execute('SELECT id, name, email, division, created_at FROM users WHERE id = ?', (user_id,))
         user = cursor.fetchone()
         
         if not user:
+            session.clear()
             flash('User not found!', 'error')
             return redirect(url_for('login'))
         
-        # Get skills user can teach
         cursor.execute('''
             SELECT s.name, ut.available_time 
             FROM skills s 
@@ -167,7 +142,6 @@ def profile():
         ''', (user_id,))
         teaching_skills = cursor.fetchall()
         
-        # Get skills user wants to learn
         cursor.execute('''
             SELECT s.name 
             FROM skills s 
@@ -176,7 +150,6 @@ def profile():
         ''', (user_id,))
         learning_skills = cursor.fetchall()
         
-        # Get user's exchanges
         cursor.execute('''
             SELECT 
                 e.id, e.status, e.session_time, e.created_at,
@@ -212,15 +185,12 @@ def profile():
 
 @app.route('/browse')
 def browse():
-    """Browse available skills and users"""
     search_query = request.args.get('search', '')
-    
     conn = get_db_connection()
     cursor = conn.cursor()
     
     try:
         if search_query:
-            # Search for skills
             cursor.execute('''
                 SELECT DISTINCT s.id, s.name, COUNT(ut.user_id) as teacher_count
                 FROM skills s
@@ -230,7 +200,6 @@ def browse():
                 ORDER BY teacher_count DESC, s.name
             ''', (f'%{search_query}%',))
         else:
-            # Get all skills
             cursor.execute('''
                 SELECT s.id, s.name, COUNT(ut.user_id) as teacher_count
                 FROM skills s
@@ -238,9 +207,7 @@ def browse():
                 GROUP BY s.id, s.name
                 ORDER BY teacher_count DESC, s.name
             ''')
-        
         skills = cursor.fetchall()
-        
     except Exception as e:
         flash(f'Error browsing skills: {str(e)}', 'error')
         skills = []
@@ -251,12 +218,10 @@ def browse():
 
 @app.route('/skill/<int:skill_id>')
 def skill_teachers(skill_id):
-    """Show teachers for a specific skill"""
     conn = get_db_connection()
     cursor = conn.cursor()
     
     try:
-        # Get skill information
         cursor.execute('SELECT name FROM skills WHERE id = ?', (skill_id,))
         skill = cursor.fetchone()
         
@@ -264,7 +229,6 @@ def skill_teachers(skill_id):
             flash('Skill not found!', 'error')
             return redirect(url_for('browse'))
         
-        # Get teachers for this skill (exclude current user if logged in)
         if 'user_id' in session:
             cursor.execute('''
                 SELECT u.id, u.name, u.division, ut.available_time
@@ -281,9 +245,7 @@ def skill_teachers(skill_id):
                 WHERE ut.skill_id = ?
                 ORDER BY u.name
             ''', (skill_id,))
-        
         teachers = cursor.fetchall()
-        
     except Exception as e:
         flash(f'Error loading teachers: {str(e)}', 'error')
         return redirect(url_for('browse'))
@@ -294,20 +256,22 @@ def skill_teachers(skill_id):
 
 @app.route('/request_exchange', methods=['POST'])
 def request_exchange():
-    """Request a skill exchange"""
     if 'user_id' not in session:
         flash('Please log in to request exchanges!', 'warning')
         return redirect(url_for('login'))
     
-    teacher_id = request.form['teacher_id']
-    skill_id = request.form['skill_id']
+    teacher_id = request.form.get('teacher_id')
+    skill_id = request.form.get('skill_id')
     learner_id = session['user_id']
+    
+    if not teacher_id or not skill_id:
+        flash('Invalid request!', 'error')
+        return redirect(url_for('browse'))
     
     conn = get_db_connection()
     cursor = conn.cursor()
     
     try:
-        # Check if request already exists
         cursor.execute('''
             SELECT id FROM exchanges 
             WHERE teacher_id = ? AND learner_id = ? AND skill_id = ?
@@ -316,14 +280,12 @@ def request_exchange():
         if cursor.fetchone():
             flash('You have already requested this exchange!', 'warning')
         else:
-            # Create new exchange request
             cursor.execute('''
                 INSERT INTO exchanges (teacher_id, learner_id, skill_id, status)
                 VALUES (?, ?, ?, 'pending')
             ''', (teacher_id, learner_id, skill_id))
             conn.commit()
             flash('Exchange request sent successfully!', 'success')
-    
     except Exception as e:
         flash(f'Error sending request: {str(e)}', 'error')
     finally:
@@ -333,7 +295,6 @@ def request_exchange():
 
 @app.route('/accept_exchange/<int:exchange_id>')
 def accept_exchange(exchange_id):
-    """Accept an exchange request"""
     if 'user_id' not in session:
         flash('Please log in first!', 'warning')
         return redirect(url_for('login'))
@@ -342,7 +303,6 @@ def accept_exchange(exchange_id):
     cursor = conn.cursor()
     
     try:
-        # Update exchange status
         cursor.execute('''
             UPDATE exchanges 
             SET status = 'accepted' 
@@ -353,8 +313,7 @@ def accept_exchange(exchange_id):
             conn.commit()
             flash('Exchange request accepted!', 'success')
         else:
-            flash('Exchange not found or you are not authorized!', 'error')
-    
+            flash('Exchange not found or unauthorized!', 'error')
     except Exception as e:
         flash(f'Error accepting exchange: {str(e)}', 'error')
     finally:
@@ -364,7 +323,6 @@ def accept_exchange(exchange_id):
 
 @app.route('/sessions')
 def sessions():
-    """View scheduled sessions"""
     if 'user_id' not in session:
         flash('Please log in to view sessions!', 'warning')
         return redirect(url_for('login'))
@@ -374,7 +332,6 @@ def sessions():
     cursor = conn.cursor()
     
     try:
-        # Get accepted exchanges for the user
         cursor.execute('''
             SELECT 
                 e.id, e.session_time, s.name as skill_name,
@@ -397,9 +354,7 @@ def sessions():
             WHERE (e.teacher_id = ? OR e.learner_id = ?) AND e.status = 'accepted'
             ORDER BY e.created_at DESC
         ''', (user_id, user_id, user_id, user_id, user_id))
-        
         sessions = cursor.fetchall()
-        
     except Exception as e:
         flash(f'Error loading sessions: {str(e)}', 'error')
         sessions = []
@@ -410,20 +365,9 @@ def sessions():
 
 @app.route('/logout')
 def logout():
-    """Logout user"""
     session.clear()
     flash('You have been logged out successfully!', 'info')
     return redirect(url_for('index'))
 
-# Error handlers
-@app.errorhandler(404)
-def not_found(error):
-    return render_template('base.html', error="Page not found"), 404
-
-@app.errorhandler(500)
-def internal_error(error):
-    return render_template('base.html', error="Internal server error"), 500
-
 if __name__ == '__main__':
-    # Run the application in debug mode
     app.run(debug=True, host='127.0.0.1', port=5000)

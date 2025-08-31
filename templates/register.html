@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Skill Exchange Network{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="fas fa-user-plus"></i> Join Skill Exchange Network</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="registrationForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">Full Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="division" class="form-label">Division/Class *</label>
+                            <input type="text" class="form-control" id="division" name="division" placeholder="e.g., IT-A, CS-B" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address *</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="password" class="form-label">Password *</label>
+                            <input type="password" class="form-control" id="password" name="password" minlength="6" required>
+                            <small class="form-text text-muted">Minimum 6 characters</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="confirm_password" class="form-label">Confirm Password *</label>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Skills I Can Teach</label>
+                        <div class="skills-container border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                            {% for skill in skills %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="teach_skills" value="{{ skill[0] }}" id="teach_{{ skill[0] }}">
+                                <label class="form-check-label" for="teach_{{ skill[0] }}">{{ skill[1] }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="available_time" class="form-label">When are you available to teach?</label>
+                        <select class="form-control" id="available_time" name="available_time">
+                            <option value="Weekdays Morning">Weekdays Morning (8 AM - 12 PM)</option>
+                            <option value="Weekdays Afternoon">Weekdays Afternoon (12 PM - 6 PM)</option>
+                            <option value="Weekdays Evening">Weekdays Evening (6 PM - 10 PM)</option>
+                            <option value="Weekends">Weekends</option>
+                            <option value="Flexible">Flexible</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Skills I Want to Learn</label>
+                        <div class="skills-container border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                            {% for skill in skills %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="learn_skills" value="{{ skill[0] }}" id="learn_{{ skill[0] }}">
+                                <label class="form-check-label" for="learn_{{ skill[0] }}">{{ skill[1] }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-user-plus"></i> Create My Account
+                        </button>
+                    </div>
+                </form>
+                
+                <hr>
+                <div class="text-center">
+                    <p class="mb-0">Already have an account?</p>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-sign-in-alt"></i> Login Here
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
