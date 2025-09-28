@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Skills – Skill Exchange Network{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4"><i class="fas fa-search"></i> Browse Skills</h2>
+
+  <!-- Search Bar -->
+  <div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+      <form method="get" class="d-flex">
+        <input type="text" name="search" class="form-control me-2" placeholder="Search for skills..." value="{{ search_query or '' }}" aria-label="Search for skills">
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-search"></i> Search
+        </button>
+      </form>
+    </div>
+    <div class="col-md-4 text-end">
+      {% if search_query %}
+        <a href="{{ url_for('browse') }}" class="btn btn-outline-secondary">
+          <i class="fas fa-times"></i> Clear Search
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Skills Grid -->
+  <div class="row">
+    {% if skills %}
+      {% for skill in skills %}
+        <div class="col-md-4 mb-3">
+          <div class="card h-100 shadow-sm skill-card">
+            <div class="card-body d-flex flex-column">
+              <div>
+                <h5 class="card-title">{{ skill[1] }}</h5>
+                <p class="card-text text-muted">
+                  <i class="fas fa-users"></i>
+                  {{ skill[2] }} teacher{{ 's' if skill[2] != 1 else '' }} available
+                </p>
+              </div>
+              <div class="mt-auto">
+                {% if skill[2] > 0 %}
+                  <a href="{{ url_for('skill_teachers', skill_id=skill[0]) }}" class="btn btn-primary">
+                    <i class="fas fa-arrow-right"></i> Find Teachers
+                  </a>
+                {% else %}
+                  <button class="btn btn-secondary" disabled>
+                    <i class="fas fa-ban"></i> No Teachers Yet
+                  </button>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="col-12 text-center py-5">
+        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+        <h4>No Skills Found</h4>
+        {% if search_query %}
+          <p class="text-muted">No skills match “<strong>{{ search_query }}</strong>”. Try a different term.</p>
+        {% else %}
+          <p class="text-muted">No skills are available yet. Be the first to add one!</p>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

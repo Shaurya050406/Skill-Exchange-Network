@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+
+{% block title %}My Sessions - Skill Exchange Network{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-calendar-alt"></i> My Scheduled Sessions</h2>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body">
+            {% if sessions %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Skill</th>
+                            <th>Partner</th>
+                            <th>Role</th>
+                            <th>Contact</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for session in sessions %}
+                        <tr>
+                            <td>
+                                <strong>{{ session[2] }}</strong>
+                            </td>
+                            <td>{{ session[3] }}</td>
+                            <td>
+                                {% if session[4] == 'Teaching' %}
+                                    <span class="badge bg-success">Teaching</span>
+                                {% else %}
+                                    <span class="badge bg-info">Learning</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="mailto:{{ session[5] }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-envelope"></i> Email
+                                </a>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-success schedule-btn" 
+                                        data-session-id="{{ session[0] }}"
+                                        data-partner="{{ session[3] }}"
+                                        data-skill="{{ session[2] }}"
+                                        data-role="{{ session[4] }}">
+                                    <i class="fas fa-calendar-plus"></i> Schedule
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                <h4>No scheduled sessions yet</h4>
+                <p class="text-muted">Once your exchange requests are accepted, they will appear here.</p>
+                <a href="{{ url_for('browse') }}" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Browse Skills
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Instructions Card -->
+    <div class="card mt-4 border-info">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="fas fa-info-circle"></i> How to Schedule Sessions</h5>
+        </div>
+        <div class="card-body">
+            <ol>
+                <li>Click the <strong>"Schedule"</strong> button next to your session</li>
+                <li>Select your preferred date and time</li>
+                <li>Both you and your partner will receive email confirmation</li>
+                <li>Use the meeting link sent via email to connect</li>
+                <li>Prepare your teaching/learning materials in advance</li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+<!-- Schedule Session Modal -->
+<div class="modal fade" id="scheduleModal" tabindex="-1" aria-labelledby="scheduleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="scheduleModalLabel">
+                    <i class="fas fa-calendar-plus"></i> Schedule Your Session
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="session-info-card mb-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <i class="fas fa-user text-primary"></i>
+                                <strong>Partner:</strong> <span id="modal-partner"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <i class="fas fa-graduation-cap text-success"></i>
+                                <strong>Skill:</strong> <span id="modal-skill"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mt-2">
+                            <div class="info-item">
+                                <i class="fas fa-chalkboard-teacher text-info"></i>
+                                <strong>Your Role:</strong> <span id="modal-role"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mt-2">
+                            <div class="info-item">
+                                <i class="fas fa-clock text-warning"></i>
+                                <strong>Duration:</strong> 60 minutes
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="scheduleForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="sessionDate" class="form-label">
+                                    <i class="fas fa-calendar"></i> Select Date
+                                </label>
+                                <input type="date" class="form-control" id="sessionDate" required>
+                                <div class="form-text">Choose a date at least 24 hours from now</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="sessionTime" class="form-label">
+                                    <i class="fas fa-clock"></i> Select Time
+                                </label>
+                                <select class="form-control" id="sessionTime" required>
+                                    <option value="">Choose a time slot</option>
+                                    <option value="09:00">09:00 AM</option>
+                                    <option value="10:00">10:00 AM</option>
+                                    <option value="11:00">11:00 AM</option>
+                                    <option value="12:00">12:00 PM</option>
+                                    <option value="13:00">01:00 PM</option>
+                                    <option value="14:00">02:00 PM</option>
+                                    <option value="15:00">03:00 PM</option>
+                                    <option value="16:00">04:00 PM</option>
+                                    <option value="17:00">05:00 PM</option>
+                                    <option value="18:00">06:00 PM</option>
+                                    <option value="19:00">07:00 PM</option>
+                                    <option value="20:00">08:00 PM</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="sessionNotes" class="form-label">
+                            <i class="fas fa-sticky-note"></i> Session Notes (Optional)
+                        </label>
+                        <textarea class="form-control" id="sessionNotes" rows="3" 
+                                  placeholder="Add any special notes or topics you'd like to cover..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-video"></i> Meeting Platform
+                        </label>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="platform" id="zoom" value="zoom" checked>
+                                    <label class="form-check-label" for="zoom">
+                                        <i class="fab fa-zoom text-primary"></i> Zoom
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="platform" id="meet" value="google-meet">
+                                    <label class="form-check-label" for="meet">
+                                        <i class="fab fa-google text-danger"></i> Google Meet
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="platform" id="teams" value="teams">
+                                    <label class="form-check-label" for="teams">
+                                        <i class="fab fa-microsoft text-info"></i> Teams
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>What happens next?</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Both you and your partner will receive email confirmation</li>
+                            <li>A meeting link will be generated and sent to both parties</li>
+                            <li>Calendar invites will be sent automatically</li>
+                            <li>You can reschedule up to 2 hours before the session</li>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="button" class="btn btn-success" id="confirmSchedule">
+                    <i class="fas fa-paper-plane"></i> Schedule Session
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="successModalLabel">
+                    <i class="fas fa-check-circle"></i> Session Scheduled Successfully!
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="success-animation mb-3">
+                    <i class="fas fa-check-circle fa-4x text-success"></i>
+                </div>
+                <h4>All Set! 🎉</h4>
+                <p class="mb-3">Your session has been successfully scheduled.</p>
+                
+                <div class="alert alert-success">
+                    <strong>Email Confirmations Sent!</strong><br>
+                    <i class="fas fa-envelope"></i> Both you and your partner will receive:
+                    <ul class="text-start mt-2 mb-0">
+                        <li>📅 Calendar invite with session details</li>
+                        <li>🔗 Meeting link for your chosen platform</li>
+                        <li>📋 Session preparation guidelines</li>
+                        <li>⏰ Reminder 30 minutes before the session</li>
+                    </ul>
+                </div>
+
+                <div class="session-details mt-3">
+                    <h6><strong>Session Details:</strong></h6>
+                    <div class="row text-start">
+                        <div class="col-6"><strong>Date:</strong></div>
+                        <div class="col-6" id="success-date"></div>
+                        <div class="col-6"><strong>Time:</strong></div>
+                        <div class="col-6" id="success-time"></div>
+                        <div class="col-6"><strong>Platform:</strong></div>
+                        <div class="col-6" id="success-platform"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                    <i class="fas fa-thumbs-up"></i> Awesome!
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.session-info-card {
+    background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%);
+    border-radius: 15px;
+    padding: 20px;
+    border: 1px solid #e3f2fd;
+}
+
+.info-item {
+    margin-bottom: 8px;
+}
+
+.info-item i {
+    width: 20px;
+    margin-right: 8px;
+}
+
+.success-animation {
+    animation: bounceIn 0.6s ease-out;
+}
+
+@keyframes bounceIn {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.05); }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.form-check-label {
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.form-check-input:checked + .form-check-label {
+    background-color: #e3f2fd;
+    border-color: #2196f3;
+}
+</style>
+{% endblock %}

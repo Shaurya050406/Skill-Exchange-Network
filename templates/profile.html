@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - Skill Exchange Network{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- User Information -->
+    <div class="col-md-4">
+        <div class="card shadow mb-4 rounded-3 border-0">
+            <div class="card-header bg-gradient bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-user-circle"></i> Profile Information</h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" 
+                     class="rounded-circle mb-3" width="100" alt="Profile Picture">
+                <h5 class="fw-bold">{{ user[1] }}</h5>
+                <p class="text-muted small mb-1"><i class="fas fa-envelope"></i> {{ user[2] }}</p>
+                <p class="text-muted small mb-1"><i class="fas fa-users"></i> Division: {{ user[3] }}</p>
+                <p class="text-muted small"><i class="fas fa-calendar-alt"></i> Joined: {{ user[4][:10] }}</p>
+                <a href="#" class="btn btn-outline-primary btn-sm mt-2"><i class="fas fa-edit"></i> Edit Profile</a>
+            </div>
+        </div>
+
+        <!-- Skills I Teach -->
+        <div class="card shadow mb-4 border-0 rounded-3">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-chalkboard-teacher"></i> I Can Teach</h5>
+            </div>
+            <div class="card-body">
+                {% if teaching_skills %}
+                    {% for skill, time in teaching_skills %}
+                    <div class="mb-2 d-flex justify-content-between align-items-center p-2 bg-light rounded">
+                        <span class="badge bg-success px-3 py-2">{{ skill }}</span>
+                        <small class="text-muted"><i class="fas fa-clock"></i> {{ time }}</small>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No teaching skills listed yet.</p>
+                    <a href="{{ url_for('register') }}" class="btn btn-sm btn-outline-success">
+                        <i class="fas fa-plus"></i> Add Skills
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Skills I Want to Learn -->
+        <div class="card shadow border-0 rounded-3">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-graduation-cap"></i> I Want to Learn</h5>
+            </div>
+            <div class="card-body">
+                {% if learning_skills %}
+                    {% for skill in learning_skills %}
+                    <span class="badge bg-info me-2 mb-2 px-3 py-2">{{ skill[0] }}</span>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No learning goals set yet.</p>
+                    <a href="{{ url_for('browse') }}" class="btn btn-sm btn-outline-info">
+                        <i class="fas fa-search"></i> Browse Skills
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Exchange Requests and Sessions -->
+    <div class="col-md-8">
+        <div class="card shadow border-0 rounded-3">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-exchange-alt"></i> My Exchanges</h5>
+            </div>
+            <div class="card-body">
+                {% if exchanges %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Skill</th>
+                                <th>Partner</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for exchange in exchanges %}
+                            <tr>
+                                <td><strong>{{ exchange[4] }}</strong></td>
+                                <td><i class="fas fa-user"></i> {{ exchange[5] }}</td>
+                                <td>
+                                    {% if exchange[6] == 'Teaching' %}
+                                        <span class="badge bg-success">Teaching</span>
+                                    {% else %}
+                                        <span class="badge bg-info">Learning</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if exchange[1] == 'pending' %}
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                    {% elif exchange[1] == 'accepted' %}
+                                        <span class="badge bg-success">Accepted</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if exchange[1] == 'pending' and exchange[6] == 'Teaching' %}
+                                        <a href="{{ url_for('accept_exchange', exchange_id=exchange[0]) }}" 
+                                           class="btn btn-sm btn-success"
+                                           onclick="return confirm('Accept this exchange request?')">
+                                           <i class="fas fa-check"></i> Accept
+                                        </a>
+                                    {% elif exchange[1] == 'accepted' %}
+                                        <small class="text-success">
+                                            <i class="fas fa-check-circle"></i> Ready to connect
+                                        </small>
+                                    {% else %}
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock"></i> Waiting for response
+                                        </small>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-handshake fa-3x text-muted mb-3"></i>
+                    <h6>No exchanges yet!</h6>
+                    <p class="text-muted">Browse skills to find learning opportunities.</p>
+                    <a href="{{ url_for('browse') }}" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Browse Skills
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card border-primary shadow-sm">
+                    <div class="card-body text-center">
+                        <h6 class="card-title">Find Skills to Learn</h6>
+                        <a href="{{ url_for('browse') }}" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Browse Skills
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-success shadow-sm">
+                    <div class="card-body text-center">
+                        <h6 class="card-title">View My Sessions</h6>
+                        <a href="{{ url_for('sessions') }}" class="btn btn-success">
+                            <i class="fas fa-calendar"></i> My Sessions
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

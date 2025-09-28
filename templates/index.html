@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Skill Exchange Network{% endblock %}
+
+{% block content %}
+<div class="hero-gradient">
+    <div class="hero-content">
+        <div class="hero-animation">
+            <h1 class="hero-title">Welcome to <span class="gradient-text">Skill Exchange Network</span></h1>
+            <p class="hero-subtitle">Where students connect, teach, and learn together</p>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="courseCount">50+</span>
+                    <span class="stat-label">Skills Available</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number live-counter" id="userCount">0</span>
+                    <span class="stat-label">Live Active Users</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">24/7</span>
+                    <span class="stat-label">Learning Support</span>
+                </div>
+            </div>
+        </div>
+
+        {% if not session.user_id %}
+        <div class="hero-actions">
+            <div class="action-cards">
+                <div class="action-card primary-card">
+                    <div class="card-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <h3>Start Your Journey</h3>
+                    <p>Join thousands of students already exchanging skills</p>
+                    <a href="{{ url_for('register') }}" class="btn btn-hero btn-primary">Join Now</a>
+                </div>
+                <div class="action-card secondary-card">
+                    <div class="card-icon">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </div>
+                    <h3>Welcome Back</h3>
+                    <p>Continue your learning journey with us</p>
+                    <a href="{{ url_for('login') }}" class="btn btn-hero btn-outline">Login</a>
+                </div>
+            </div>
+            <div class="explore-section">
+                <a href="{{ url_for('browse') }}" class="explore-link">
+                    <i class="fas fa-search"></i> Explore Skills First
+                </a>
+            </div>
+        </div>
+        {% else %}
+        <div class="welcome-back">
+            <div class="welcome-message">
+                <h2>Welcome back, <span class="user-name">{{ session.user_name }}</span>!</h2>
+                <p>Ready to continue your skill exchange journey?</p>
+            </div>
+            <div class="dashboard-cards">
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <i class="fas fa-search"></i>
+                        <span>Discover</span>
+                    </div>
+                    <h4>Find Skills</h4>
+                    <p>Explore new learning opportunities</p>
+                    <a href="{{ url_for('browse') }}" class="btn btn-card">Browse Skills</a>
+                </div>
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <i class="fas fa-user-circle"></i>
+                        <span>Profile</span>
+                    </div>
+                    <h4>My Learning</h4>
+                    <p>Manage your skills and exchanges</p>
+                    <a href="{{ url_for('profile') }}" class="btn btn-card">View Profile</a>
+                </div>
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Sessions</span>
+                    </div>
+                    <h4>My Sessions</h4>
+                    <p>Track your learning schedule</p>
+                    <a href="{{ url_for('sessions') }}" class="btn btn-card">View Sessions</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="floating-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+    </div>
+</div>
+
+<div class="features-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>How It Works</h2>
+            <p>Three simple steps to start your skill exchange journey</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div class="feature-number">01</div>
+                <h3>Create Profile</h3>
+                <p>Sign up and showcase the skills you can teach and want to learn</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-handshake"></i>
+                </div>
+                <div class="feature-number">02</div>
+                <h3>Connect & Match</h3>
+                <p>Find other students with complementary skills and request exchanges</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="feature-number">03</div>
+                <h3>Learn & Teach</h3>
+                <p>Schedule sessions and start exchanging knowledge with your peers</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="skills-showcase">
+    <div class="container">
+        <div class="section-header">
+            <h2>Popular Skills</h2>
+            <p>Most sought-after skills on our platform</p>
+        </div>
+        <div class="skills-cloud">
+            <span class="skill-tag hot">Python Programming</span>
+            <span class="skill-tag trending">Web Development</span>
+            <span class="skill-tag">JavaScript</span>
+            <span class="skill-tag popular">Graphic Design</span>
+            <span class="skill-tag">Digital Marketing</span>
+            <span class="skill-tag hot">Data Science</span>
+            <span class="skill-tag">UI/UX Design</span>
+            <span class="skill-tag trending">Mobile Development</span>
+            <span class="skill-tag">Photography</span>
+            <span class="skill-tag popular">Video Editing</span>
+        </div>
+        <div class="cta-section">
+            <a href="{{ url_for('browse') }}" class="btn btn-gradient">Explore All Skills</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
