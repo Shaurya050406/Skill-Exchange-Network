@@ -8,17 +8,14 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeScheduling() {
-    // Set minimum date to tomorrow
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const minDate = tomorrow.toISOString().split('T')[0];
-    
     const dateInput = document.getElementById('sessionDate');
     if (dateInput) {
         dateInput.setAttribute('min', minDate);
     }
 
-    // Handle schedule button clicks
     document.querySelectorAll('.schedule-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const sessionId = this.dataset.sessionId;
@@ -26,18 +23,13 @@ function initializeScheduling() {
             const skill = this.dataset.skill;
             const role = this.dataset.role;
 
-            // Populate modal with session info
             document.getElementById('modal-partner').textContent = partner;
             document.getElementById('modal-skill').textContent = skill;
             document.getElementById('modal-role').textContent = role;
-
-            // Show the modal
             const modal = new bootstrap.Modal(document.getElementById('scheduleModal'));
             modal.show();
         });
     });
-
-    // Handle schedule confirmation
     document.getElementById('confirmSchedule').addEventListener('click', function() {
         const form = document.getElementById('scheduleForm');
         
@@ -45,23 +37,15 @@ function initializeScheduling() {
             return;
         }
 
-        // Show loading state
         this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Scheduling...';
         this.disabled = true;
 
-        // Simulate API call
         setTimeout(() => {
-            // Reset button
             this.innerHTML = '<i class="fas fa-paper-plane"></i> Schedule Session';
             this.disabled = false;
 
-            // Hide schedule modal
             bootstrap.Modal.getInstance(document.getElementById('scheduleModal')).hide();
-
-            // Show success modal
             showSuccessModal();
-
-            // Reset form
             form.reset();
         }, 2000);
     });
@@ -81,7 +65,6 @@ function validateScheduleForm() {
         return false;
     }
 
-    // Check if date is at least 24 hours from now
     const selectedDate = new Date(date + ' ' + time);
     const minDateTime = new Date();
     minDateTime.setHours(minDateTime.getHours() + 24);
@@ -99,7 +82,6 @@ function showSuccessModal() {
     const time = document.getElementById('sessionTime').value;
     const platform = document.querySelector('input[name="platform"]:checked').value;
 
-    // Format date
     const dateObj = new Date(date);
     const formattedDate = dateObj.toLocaleDateString('en-US', {
         weekday: 'long',
@@ -108,7 +90,6 @@ function showSuccessModal() {
         day: 'numeric'
     });
 
-    // Format time
     const timeObj = new Date('2000-01-01 ' + time);
     const formattedTime = timeObj.toLocaleTimeString('en-US', {
         hour: 'numeric',
@@ -116,28 +97,22 @@ function showSuccessModal() {
         hour12: true
     });
 
-    // Format platform
     const platformNames = {
         'zoom': 'Zoom',
         'google-meet': 'Google Meet',
         'teams': 'Microsoft Teams'
     };
 
-    // Update success modal content
     document.getElementById('success-date').textContent = formattedDate;
     document.getElementById('success-time').textContent = formattedTime;
     document.getElementById('success-platform').textContent = platformNames[platform];
 
-    // Show success modal
     const successModal = new bootstrap.Modal(document.getElementById('successModal'));
     successModal.show();
-
-    // Add confetti effect
     createConfetti();
 }
 
 function createConfetti() {
-    // Simple confetti effect
     const confettiContainer = document.createElement('div');
     confettiContainer.style.cssText = `
         position: fixed;
@@ -150,7 +125,6 @@ function createConfetti() {
     `;
     document.body.appendChild(confettiContainer);
 
-    // Create confetti pieces
     for (let i = 0; i < 50; i++) {
         const confetti = document.createElement('div');
         confetti.style.cssText = `
@@ -165,7 +139,6 @@ function createConfetti() {
         confettiContainer.appendChild(confetti);
     }
 
-    // Remove confetti after animation
     setTimeout(() => {
         document.body.removeChild(confettiContainer);
     }, 5000);
@@ -195,12 +168,11 @@ function initializeLiveCounters() {
       animateCount('userCount', currentCount, liveUsers, 2000);
     } catch (error) {
       console.error('Error fetching live user count:', error);
-      // Optionally, you can display a static number or hide the counter on error
     }
   };
 
-  fetchAndAnimateUsers(); // Initial fetch
-  setInterval(fetchAndAnimateUsers, 5000); // Fetch every 5 seconds
+  fetchAndAnimateUsers();
+  setInterval(fetchAndAnimateUsers, 5000);
 }
 
 function animateCount(elementId, start, end, duration) {
